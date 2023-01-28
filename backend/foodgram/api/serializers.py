@@ -42,7 +42,8 @@ class RecipeIngredientAmountSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     # ingredients = IngredientSerializer(many=True, read_only=True)
-    ingredients = RecipeIngredientAmountSerializer(many=True, read_only=True)
+    # ingredients = RecipeIngredientAmountSerializer(many=True, read_only=True)
+    ingredients = RecipeIngredientAmountSerializer(source='recipeingredientamount_set', many=True)
     class Meta:
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients', 'image',  'name', 'text', 'cooking_time')
