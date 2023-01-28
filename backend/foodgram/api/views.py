@@ -25,6 +25,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
 
+
+
+
 # class RecipeIngredientAmountSViewSet(viewsets.ModelViewSet):
 #     queryset = RecipeIngredientAmount.objects.all()
 #     serializer_class = RecipeIngredientAmountSerializer
