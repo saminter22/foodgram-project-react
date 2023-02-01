@@ -11,4 +11,4 @@ flake8==6.0.0
 djangorestframework==3.12.3
 
 djoser==2.1.0
-djangorestframework-simplejwt==4.7.2
+# djangorestframework-simplejwt==4.7.2

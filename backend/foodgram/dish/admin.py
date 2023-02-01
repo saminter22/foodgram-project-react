@@ -5,7 +5,11 @@ from .models import (
     Ingredient, 
     Tag, 
     Recipe, 
-    RecipeIngredientAmount)
+    RecipeIngredientAmount,
+    Subscription,
+    Favorite,
+    Cart
+    )
 
 
 @admin.register(Ingredient)
@@ -22,6 +26,7 @@ class IngredientAdmin(admin.ModelAdmin):
     search_fields = ('name', )
 
 
+@admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -51,6 +56,7 @@ class IngredientInLine(admin.TabularInline):
         'measurement'
         )
 
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -70,6 +76,28 @@ class RecipeAdmin(admin.ModelAdmin):
     search_fields = ('name', )
 
 
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = ('subscriber', 'author',)
+    list_filter = ('subscriber', 'author', )
+    search_fields = ('subscriber', 'author', )
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ('user', 'recipe', )
+    list_filter = ('user', 'recipe', )
+    search_fields = ('user', 'recipe', )
+
+
+@admin.register(Cart)
+class CartAdmin(admin.ModelAdmin):
+    list_display = ('user', 'recipe', )
+    list_filter = ('user', 'recipe', )
+    search_fields = ('user', 'recipe', )
+
+
+
 # class RecipeIngredientAmountAdmin(admin.ModelAdmin):
 #     list_display = (
 #         'ingredient',
@@ -82,8 +110,10 @@ class RecipeAdmin(admin.ModelAdmin):
 
 
 # admin.site.register(Ingredient, IngredientAdmin)
-admin.site.register(Tag, TagAdmin)
-admin.site.register(Recipe, RecipeAdmin)
+# admin.site.register(Tag, TagAdmin)
+# admin.site.register(Recipe, RecipeAdmin)
 # admin.site.register(RecipeIngredientAmount, RecipeIngredientAmountAdmin)
 # admin.site.register(RecipeIngredientAmount)
+# admin.site.register(Subscription, SubscriptionAdmin)
+
 

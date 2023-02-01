@@ -20,7 +20,7 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
-        return f'{self.name} , {self.measurement}'
+        return f'{self.name} ({self.measurement})'
 
 
 class Tag(models.Model):
@@ -62,7 +62,8 @@ class Recipe(models.Model):
 
 class RecipeIngredientAmount(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, verbose_name='Название ингредиента')
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, 
+        verbose_name='Название ингредиента', related_name='baserecipes')
     amount = models.SmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(500)], 
         verbose_name='Количество'
@@ -79,35 +80,35 @@ class RecipeIngredientAmount(models.Model):
         verbose_name_plural = 'Количество ингредиентов'
 
     def __str__(self):
-        return f'{self.ingredient} - {self.amount} - '
+        return f'{self.ingredient}, {self.amount}'
 
 
 class Subscription(models.Model):
-    user = models.ForeignKey(
+    subscriber = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscriber',
+        related_name='authors',
         verbose_name='Подписчик'
         )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='author',
+        related_name='subscribers',
         verbose_name='Автор'
         )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields = ['user', 'author'],
-                name = 'user_author'
+                fields = ['subscriber', 'author'],
+                name = 'subscriber_author'
             )
         ]
-        verbose_name = 'Подпсчик'
+        verbose_name = 'Подписчик'
         verbose_name_plural = 'Подписчики'
 
-    def __str__(self):
-        return self.author
+    # def __str__(self):
+    #     return self.author
 
 
 class Favorite(models.Model):

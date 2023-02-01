@@ -101,28 +101,30 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated', 
     ],
 
-    # 'DEFAULT_AUTHENTICATION_CLASSES': [
-    #     'rest_framework.authentication.TokenAuthentication',
-    # ],
-
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
+
+    # 'DEFAULT_AUTHENTICATION_CLASSES': [
+    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
+    # ],
     
 }
 
-SIMPLE_JWT = {
-    # Устанавливаем срок жизни токена
-   'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
-   'AUTH_HEADER_TYPES': ('Bearer',),
-}
+# SIMPLE_JWT = {
+#     # Устанавливаем срок жизни токена
+#    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
+#    'AUTH_HEADER_TYPES': ('Bearer',),
+# }
 
 DJOSER = {
-#     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
+    # 'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
 #     'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
 #     'ACTIVATION_URL': '#/activate/{uid}/{token}',
 #     'SEND_ACTIVATION_EMAIL': True,
+    # 'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
     'SERIALIZERS': {
+        'user': 'api.serializers.CustomUserSerializer',
         'user_create': 'api.serializers.CustomUserCreateSerializer',
     },
 }
@@ -141,6 +143,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+DEFAULT_CHARSET = 'utf-8'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
