@@ -23,7 +23,7 @@ class CustomUserCreateSerializer(UserSerializer):
         )
 
 class CustomUserSerializer(UserSerializer):
-    """Информация по юзерам."""
+    """Информация по юзерам/юзеру."""
     is_subscribed = serializers.SerializerMethodField()
     class Meta:
         model = User
@@ -42,11 +42,13 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ('id', 'name', 'color', 'slug')
 
+
 class IngredientSerializer(serializers.ModelSerializer):
     measurement_unit = serializers.CharField(source='measurement')
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
+
 
 class RecipeIngredientAmountSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source='ingredient.id')
@@ -56,6 +58,7 @@ class RecipeIngredientAmountSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredientAmount
         fields = ('id', 'name', 'measurement_unit', 'amount', )
+
 
 class AuthorSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
@@ -93,11 +96,23 @@ class RecipeSerializer(serializers.ModelSerializer):
             user=self.context.get('request').user, recipe=obj).exists()
         return is_in_shopping_cart
 
+
+class RecipeSerializerWrite(serializers.Serializer):
+    class Meta:
+        model = Recipe
+        fields = (
+        'id', 'tags', 'author', 'ingredients', 
+        'is_favorited', 'is_in_shopping_cart', 'name', 'image',  'text', 'cooking_time', 
+    )
+
+
+
 class SubscriptionSerializer(serializers.ModelSerializer):
     """Показываем список подписчиков."""
     class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name', )
+
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
     """Показываем короткую информамцию по рецепту."""
@@ -105,8 +120,9 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
+
 class SubscribeSerializer(serializers.ModelSerializer):
-    """Подписка и отписка от user_id"""
+    """Подписка и отписка от user_id."""
     recipes = ShortRecipeSerializer(many=True)
     is_subscribed = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
@@ -125,10 +141,6 @@ class SubscribeSerializer(serializers.ModelSerializer):
     def get_recipes_count(self, obj):
         return obj.recipes.count()
 
-    def validate_following(self, value):
-        if value == self.context['request'].user:
-            raise serializers.ValidationError("Нельзя подписаться на себя!")
-        return value
 
 class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
