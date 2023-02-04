@@ -66,11 +66,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
-
+    
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return RecipeSerializer
         return RecipeSerializerWrite
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
 
     @action(methods=['POST', 'DELETE'], detail=True, permission_classes=(IsAuthenticated, ))
     def favorite(self, request, **kwargs):
