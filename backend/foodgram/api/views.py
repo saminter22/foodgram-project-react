@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 from django.db.models import Sum
+from rest_framework import filters
 from rest_framework import permissions
 from rest_framework import status
 from rest_framework import viewsets
@@ -10,7 +11,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from djoser.views import UserViewSet
 
-from .permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+
+from .permissions import IsAuthenticated, IsAuthorOrReadOnly
 from .mixins import CreateDestroyViewSet, ListCreateDestroyViewSet
 
 from dish.models import (
@@ -45,27 +48,32 @@ class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
     # permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
-
-    # @action(method=['GET'], detail=False,)
-    # def 
+    permission_classes = (IsAuthorOrReadOnly, )
 
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    # filter_backends = (DjangoFilterBackend,)
+    # filterset_fields = ('name', )
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('name', ) 
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = ('tags', 'author', )
+    # pagination_class = None 
     
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -75,8 +83,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-
-    @action(methods=['POST', 'DELETE'], detail=True, permission_classes=(IsAuthenticated, ))
+    @action(
+        methods=['POST', 'DELETE'], 
+        detail=True, 
+        permission_classes=(IsAuthenticated, ),
+        # filter_backends = (DjangoFilterBackend, ),
+        # filterset_fields = ('tags', )
+    )
     def favorite(self, request, **kwargs):
         """Избранное - добавление, удаление."""
         recipe_id = self.kwargs.get('pk')
