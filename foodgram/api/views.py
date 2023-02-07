@@ -62,7 +62,7 @@ class TagViewSet(viewsets.ModelViewSet):
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    # permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', ) 
 
@@ -74,15 +74,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = ('tags', 'author', )
+    search_fields = ('tags', 'ingredients', ) 
     # pagination_class = None 
 
-    def get_permissions(self):
-        """Права на разные запросы."""
-        if self.action in (
-            'create', 'favorite', 'shopping_cart', 'download_shopping_cart'):
-            self.permission_classes = (IsAuthenticated, )
-        self.permission_classes = (permissions.IsAuthenticatedOrReadOnly)
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     """Права на разные запросы."""
+    #     if self.action in (
+    #         'create', 'favorite', 'shopping_cart', 'download_shopping_cart'):
+    #         self.permission_classes = (IsAuthenticated, )
+    #     self.permission_classes = (permissions.IsAuthenticatedOrReadOnly)
+        # # return super().get_permissions()
+        # return permission_classes
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
