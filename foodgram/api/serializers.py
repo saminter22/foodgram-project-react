@@ -171,7 +171,7 @@ class RecipeSerializerWrite(serializers.ModelSerializer):
         context={'request': self.context.get('request')}).data
 
     def add_ingredients(self, recipe, ingredients):
-        print(recipe)
+        # print(recipe)
         for ingredient in ingredients:
             id_ingredient = Ingredient.objects.get(id=ingredient['id'])
             RecipeIngredientAmount.objects.create(

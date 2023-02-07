@@ -122,7 +122,7 @@ class Favorite(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['user', 'recipe'],
-                                    name='user_recipe')
+                                    name='fav_user_recipe')
         ]
         verbose_name = 'Любимый рецепт'
         verbose_name_plural = 'Любимые рецепты'
@@ -141,7 +141,7 @@ class Cart(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['user', 'recipe'],
-                                    name='user_recipe')
+                                    name='cart_user_recipe')
         ]
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзины'

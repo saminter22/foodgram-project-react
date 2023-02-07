@@ -3,7 +3,8 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = '=8^zwqdlktjzvm5k3%^@=kx-lo^u(&=jo9u6gw=jq=+9!)e2p7'
+# SECRET_KEY = '=8^zwqdlktjzvm5k3%^@=kx-lo^u(&=jo9u6gw=jq=+9!)e2p7'
+SECRET_KEY = os.getenv('SECRET_KEY', default='secret234')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -14,6 +15,9 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
+# INTERNAL_IPS = [
+#     '127.0.0.1',
+# ]
 
 # Application definition
 
@@ -31,7 +35,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
-    'django_filters', 
+    'django_filters',
+
+    'debug_toolbar',
+
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -42,6 +50,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'foodgram.urls'
@@ -68,13 +81,24 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT')
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -157,8 +181,16 @@ DEFAULT_CHARSET = 'utf-8'
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+# STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static/'),)
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 AUTH_USER_MODEL = 'users.User'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_URLS_REGEX = r'^/api/.*$'
+
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:3000',
+# ]

@@ -48,13 +48,13 @@ class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
     # permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
-    permission_classes = (IsAuthorOrReadOnly, )
+    # permission_classes = (IsAuthorOrReadOnly, )
 
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
     # filter_backends = (DjangoFilterBackend,)
     # filterset_fields = ('name', )
 
@@ -62,19 +62,28 @@ class TagViewSet(viewsets.ModelViewSet):
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', ) 
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """Работа с рецептами."""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = ('tags', 'author', )
     # pagination_class = None 
-    
+
+    def get_permissions(self):
+        """Права на разные запросы."""
+        if self.action in (
+            'create', 'favorite', 'shopping_cart', 'download_shopping_cart'):
+            self.permission_classes = (IsAuthenticated, )
+        self.permission_classes = (permissions.IsAuthenticatedOrReadOnly)
+        return super().get_permissions()
+
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return RecipeSerializer
@@ -169,7 +178,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 {'message': 'Список покупок сформирован'},
                 status=status.HTTP_200_OK
                 )
-
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
