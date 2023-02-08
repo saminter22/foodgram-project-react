@@ -32,7 +32,7 @@ from .serializers import (
     IngredientSerializer, 
     RecipeSerializer,
     RecipeSerializerWrite,
-    SubscriptionSerializer, 
+    # SubscriptionSerializer, 
     FavoriteSerializer,
     SubscribeSerializer,
 )
@@ -54,17 +54,26 @@ class CustomUserViewSet(UserViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    # permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
-    # filter_backends = (DjangoFilterBackend,)
-    # filterset_fields = ('name', )
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = ('id', )
+    pagination_class = None
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('name', ) 
+    # filter_backends = (filters.SearchFilter, )
+    # search_fields = ('^name', )
+    pagination_class = None
+
+    def get_queryset(self):
+        if self.request.GET.get('name'):
+            name = self.request.GET.get('name')
+            queryset = Ingredient.objects.filter(name__startswith=name)
+            return queryset
+        return Ingredient.objects.all()
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -72,18 +81,32 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
-    filter_backends = (DjangoFilterBackend, )
-    filterset_fields = ('tags', 'author', )
-    search_fields = ('tags', 'ingredients', ) 
-    # pagination_class = None 
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
+    filterset_fields = ('tags__slug', 'tags__id', )
+    # filterset_fields = ('tags__id', 'author', )
+    # search_fields = ('tags', 'ingredients', )
+    search_fields = ('ingredients', )
+    # pagination_class = None
 
-    # def get_permissions(self):
-    #     """Права на разные запросы."""
-    #     if self.action in (
-    #         'create', 'favorite', 'shopping_cart', 'download_shopping_cart'):
-    #         self.permission_classes = (IsAuthenticated, )
-    #     self.permission_classes = (permissions.IsAuthenticatedOrReadOnly)
-        # # return super().get_permissions()
+    def get_queryset(self):
+        if self.request.GET.get('tags'):
+            queryset = Recipe.objects.all()
+            tags = self.request.GET.get('tags')
+            # print(tags)
+            queryset = queryset.filter(tags__slug=tags)
+            return queryset
+        return Recipe.objects.all()
+
+
+    def get_permissions(self):
+        """Права на разные запросы."""
+        if self.action in (
+            'create', 'favorite', 'shopping_cart', 'download_shopping_cart'):
+            self.permission_classes = (IsAuthenticated, )
+        elif self.request.method == 'PATCH':
+            self.permission_classes = (IsAuthorOrReadOnly, )
+        self.permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+        return super().get_permissions()
         # return permission_classes
 
     def get_serializer_class(self):
@@ -93,6 +116,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    def perform_update(self, serializer):
+        # serializer.save(author=self.request.user)
+        super().perform_update(serializer)
 
     @action(
         methods=['POST', 'DELETE'], 
@@ -184,7 +211,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
     """Показываем текущие подписки."""
-    serializer_class = SubscriptionSerializer
+    # serializer_class = SubscriptionSerializer
+    serializer_class = SubscribeSerializer
+    # pagination_class = None
 
     def get_queryset(self):
         return User.objects.filter(subscribers__subscriber=self.request.user)

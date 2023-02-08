@@ -90,6 +90,7 @@ class AuthorSerializer(serializers.ModelSerializer):
             subscriber=self.context.get('request').user, author=obj).exists()
         return is_subscribed
 
+
 class RecipeSerializer(serializers.ModelSerializer):
     """Показывает список рецептов."""
     tags = TagSerializer(many=True, read_only=True)
@@ -115,7 +116,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return is_in_shopping_cart
 
 
-class IngredientAmountSerializer(serializers.ModelSerializer):
+class IngredientAmountSerializerWrite(serializers.ModelSerializer):
     """Принимает количество ингредиента и его id при записи рецепта."""
     id = serializers.IntegerField()
     class Meta:
@@ -126,7 +127,7 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 class RecipeSerializerWrite(serializers.ModelSerializer):
     """Принимает данные для записи рецепта."""
     tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
-    ingredients = IngredientAmountSerializer(many=True, required=True)
+    ingredients = IngredientAmountSerializerWrite(many=True, required=True)
     image = Base64ImageField(required=True, allow_null=False)
     author = serializers.PrimaryKeyRelatedField(
         read_only=True, default=serializers.CurrentUserDefault())
@@ -200,11 +201,11 @@ class RecipeSerializerWrite(serializers.ModelSerializer):
         return instance
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
-    """Показывает список подписчиков."""
-    class Meta:
-        model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', )
+# class SubscriptionSerializer(serializers.ModelSerializer):
+#     """Показывает список подписчиков."""
+#     class Meta:
+#         model = User
+#         fields = ('email', 'id', 'username', 'first_name', 'last_name', )
 
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
@@ -229,7 +230,10 @@ class SubscribeSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, obj):
-        return True
+        is_subscribed = Subscription.objects.filter(
+            subscriber=self.context.get('request').user, author=obj).exists()
+        return is_subscribed
+        # return True
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
