@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
+from users.models import CustomUser
 from dish.models import (
     Tag, 
     Ingredient, 
@@ -17,7 +18,6 @@ from dish.models import (
     Cart
     )
 
-User = get_user_model()
 
 class Base64ImageField(serializers.ImageField):
     def to_internal_value(self, data):
@@ -32,7 +32,7 @@ class Base64ImageField(serializers.ImageField):
 class CustomUserCreateSerializer(UserSerializer):
     """Сериализатор создания юзера."""
     class Meta:
-        model = User
+        model = CustomUser
         fields = ('email', 'id', 'username', 'first_name', 'last_name'
         )
 
@@ -40,7 +40,7 @@ class CustomUserSerializer(UserSerializer):
     """Информация по юзерам/юзеру."""
     is_subscribed = serializers.SerializerMethodField()
     class Meta:
-        model = User
+        model = CustomUser
         fields = ('email', 'id', 'username', 'first_name', 'last_name', 
         'is_subscribed'
         )
@@ -81,7 +81,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     """Информация по автору для показе в рецепте."""
     is_subscribed = serializers.SerializerMethodField()
     class Meta:
-        model = User
+        model = CustomUser
         fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
@@ -204,7 +204,7 @@ class RecipeSerializerWrite(serializers.ModelSerializer):
 # class SubscriptionSerializer(serializers.ModelSerializer):
 #     """Показывает список подписчиков."""
 #     class Meta:
-#         model = User
+#         model = CustomUser
 #         fields = ('email', 'id', 'username', 'first_name', 'last_name', )
 
 
@@ -221,7 +221,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
     class Meta:
-        model = User
+        model = CustomUser
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name', 
             'is_subscribed', 

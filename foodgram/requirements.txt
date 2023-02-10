@@ -23,4 +23,3 @@ django-debug-toolbar==3.2.4
 django-cors-headers==3.10.0
 
 # pyyaml 
-# pip install django-cors-headers==3.10.0

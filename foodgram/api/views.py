@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 from django.db.models import Sum
+from django.http import FileResponse
+from django.http import HttpResponse
 from rest_framework import filters
 from rest_framework import permissions
 from rest_framework import status
@@ -11,11 +13,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from djoser.views import UserViewSet
 
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import (
+    DjangoFilterBackend, FilterSet, AllValuesMultipleFilter, NumberFilter, BooleanFilter,
+    ModelMultipleChoiceFilter
+)
 
 from .permissions import IsAuthenticated, IsAuthorOrReadOnly
 from .mixins import CreateDestroyViewSet, ListCreateDestroyViewSet
 
+from users.models import CustomUser
 from dish.models import (
     Tag, 
     Ingredient, 
@@ -37,15 +43,14 @@ from .serializers import (
     SubscribeSerializer,
 )
 
-User = get_user_model()
 
 class CustomUserCreateViewSet(UserViewSet):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = CustomUserCreateSerializer
 
 
 class CustomUserViewSet(UserViewSet):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     # permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
     # permission_classes = (IsAuthorOrReadOnly, )
@@ -76,17 +81,55 @@ class IngredientViewSet(viewsets.ModelViewSet):
         return Ingredient.objects.all()
 
 
+class RecipeFilter(FilterSet):
+    tags = ModelMultipleChoiceFilter(
+        field_name='tags__slug',
+        to_field_name='slug',
+        queryset=Tag.objects.all()
+        # lookup_type='in'
+    )
+    is_favorited = BooleanFilter(method='filter_is_favorited')
+    is_in_shopping_cart = BooleanFilter(method='filter_in_cart')
+
+    class Meta:
+        model = Recipe
+        fields = ('tags', 
+            # 'author', 
+            # 'tags_filter'
+            )
+
+    def filter_is_favorited(self, queryset, name, value):
+        # print(name)
+        queryset = Recipe.objects.all()
+        user = self.request.user
+        if value:
+            queryset = queryset.filter(favorite__user=user)
+        return queryset
+
+    def filter_in_cart(self, queryset, name, value):
+        queryset = Recipe.objects.all()
+        user = self.request.user
+        if value:
+            queryset = queryset.filter(cart__user=user)
+        return queryset
+
+    # def filter_is_favorited(self, queryset, name, value):
+    #     if value:
+    #         user = self.request.user
+    #         queryset = user.favorite.all()
+    #     return queryset
+
+
 class RecipeViewSet(viewsets.ModelViewSet):
-    """Работа с рецептами."""
+    """Контроллер рецептов."""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
-    filterset_fields = ('tags__slug', 'tags__id', )
-    # filterset_fields = ('tags__id', 'author', )
-    # search_fields = ('tags', 'ingredients', )
+    # filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
+    filter_backends = (DjangoFilterBackend, )
+    # filter_backends = (filters.SearchFilter, )
+    filterset_class = RecipeFilter
     search_fields = ('ingredients', )
-    # pagination_class = None
 
     def get_queryset(self):
         if self.request.GET.get('tags'):
@@ -97,7 +140,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return queryset
         return Recipe.objects.all()
 
-
     def get_permissions(self):
         """Права на разные запросы."""
         if self.action in (
@@ -105,9 +147,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             self.permission_classes = (IsAuthenticated, )
         elif self.request.method == 'PATCH':
             self.permission_classes = (IsAuthorOrReadOnly, )
+        elif self.action in ('retrieve', ):
+            self.permission_classes = (permissions.AllowAny, )
+            # self.permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
         self.permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
         return super().get_permissions()
-        # return permission_classes
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -203,10 +247,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     f'{item.ingredient} - {item.amount}\n'
                 )
             file.write('\nУдачных покупок!\n')
-        return Response (
-                {'message': 'Список покупок сформирован'},
-                status=status.HTTP_200_OK
-                )
+        file_handle = file.open()
+        response = HttpResponse(file_handle, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename=buy_list.txt'
+        return response
+
+        # with open(file,'r') as file2:
+        #     response = HttpResponse(file2, content_type='text/plain')
+        #     response['Content-Disposition'] = 'attachment; filename=buy_list.txt'
+        # return Response
+        # # return Response (
+        # #         {'message': 'Список покупок сформирован'},
+        # #         status=status.HTTP_200_OK
+        # #         )
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
@@ -216,7 +269,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     # pagination_class = None
 
     def get_queryset(self):
-        return User.objects.filter(subscribers__subscriber=self.request.user)
+        return CustomUser.objects.filter(subscribers__subscriber=self.request.user)
 
 
 class APISubscribe(CreateDestroyViewSet):
@@ -234,7 +287,7 @@ class APISubscribe(CreateDestroyViewSet):
         return Response({'message': 'Отписка произошла'}, status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, user_id):
-        author = get_object_or_404(User, pk=user_id)
+        author = get_object_or_404(CustomUser, pk=user_id)
         user = request.user
         if not author:
             return Response(

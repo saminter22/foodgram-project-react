@@ -4,8 +4,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 from colorfield.fields import ColorField
-
-User = get_user_model()
+from users.models import CustomUser
 
 
 class Ingredient(models.Model):
@@ -19,8 +18,8 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
-        # return f'{self.name} ({self.measurement})'
-        return f'{self.name}'
+        return f'{self.name} ({self.measurement})'
+        # return f'{self.name}'
 
 
 class Tag(models.Model):
@@ -38,7 +37,7 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     name = models.CharField(max_length=254, verbose_name='Название блюда')
-    author = models.ForeignKey(User,
+    author = models.ForeignKey(CustomUser,
                                on_delete=models.CASCADE,
                                related_name='recipes',
                                verbose_name='Автор рецепта')
@@ -75,8 +74,6 @@ class RecipeIngredientAmount(models.Model):
                                    verbose_name='Название ингредиента',
                                    related_name='baserecipes')
     amount = models.SmallIntegerField(
-        validators=[MinValueValidator(1),
-                    MaxValueValidator(500)],
         verbose_name='Количество')
 
     class Meta:
@@ -92,11 +89,11 @@ class RecipeIngredientAmount(models.Model):
 
 
 class Subscription(models.Model):
-    subscriber = models.ForeignKey(User,
+    subscriber = models.ForeignKey(CustomUser,
                                    on_delete=models.CASCADE,
                                    related_name='authors',
                                    verbose_name='Подписчик')
-    author = models.ForeignKey(User,
+    author = models.ForeignKey(CustomUser,
                                on_delete=models.CASCADE,
                                related_name='subscribers',
                                verbose_name='Автор')
@@ -111,7 +108,7 @@ class Subscription(models.Model):
 
 
 class Favorite(models.Model):
-    user = models.ForeignKey(User,
+    user = models.ForeignKey(CustomUser,
                              on_delete=models.CASCADE,
                              related_name='favorite',
                              verbose_name='Пользователь')
@@ -130,7 +127,7 @@ class Favorite(models.Model):
 
 
 class Cart(models.Model):
-    user = models.ForeignKey(User,
+    user = models.ForeignKey(CustomUser,
                              on_delete=models.CASCADE,
                              related_name='cart',
                              verbose_name='В корзине')

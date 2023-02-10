@@ -2,10 +2,10 @@ from django.contrib.auth import get_user_model
 
 from django.urls import reverse
 from django.db import models
-from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.models import AbstractUser
 
 
-class User(AbstractUser):
+class CustomUser(AbstractUser):
     """Кастомная модель пользователя"""
     first_name = models.CharField(
         verbose_name='Имя',
@@ -27,7 +27,9 @@ class User(AbstractUser):
         null=False,
     )
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    # REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
 
     # objects = UserManager()
 

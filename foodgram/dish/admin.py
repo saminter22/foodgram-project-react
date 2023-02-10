@@ -1,5 +1,7 @@
 from django.contrib import admin
+from django.db.models import Count
 
+# from .models import CustomUser
 from .models import (Ingredient, Tag, Recipe, RecipeIngredientAmount,
                      Subscription, Favorite, Cart)
 
@@ -38,25 +40,29 @@ class IngredientInLine(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
+    # Recipe.objects.annotate(favorite_count = Count('favorite'))
     list_display = (
         'name',
         'author',
-        'cooking_time',
-        'pub_date',
+        'count_fields',
     )
+    readonly_fields = ('count_fields',)
+
     list_select_related = True
     inlines = [
         IngredientInLine,
-        # TagInLine,
     ]
     ordering = ('name', '-pub_date')
-    list_editable = ('cooking_time', )
+    # list_editable = ('name', )
     list_filter = (
         'name',
         'author',
-        'cooking_time',
+        'tags',
     )
     search_fields = ('name', )
+
+    def count_fields(self, obj):
+        return obj.favorite.count()
 
 
 @admin.register(Subscription)
