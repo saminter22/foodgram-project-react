@@ -139,12 +139,12 @@ class RecipeSerializerWrite(serializers.ModelSerializer):
         'name', 'image',  'text', 'cooking_time', 
         )
         # У каждого автора рецепты с ункальными названиями
-        # validators = [
-        #     UniqueTogetherValidator(
-        #         queryset=Recipe.objects.all(),
-        #         fields=('name', 'author')
-        #     )
-        # ]
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Recipe.objects.all(),
+                fields=('name', 'author')
+            )
+        ]
 
     # def validate(self, data):
     #     # print(data)

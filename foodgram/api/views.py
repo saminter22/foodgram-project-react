@@ -6,7 +6,11 @@ from django.db.models import Sum
 from django.http import FileResponse
 from django.http import HttpResponse
 from rest_framework import filters
-from rest_framework import permissions
+from rest_framework.permissions import (
+    IsAuthenticated, 
+    IsAuthenticatedOrReadOnly,
+    AllowAny
+    )
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -14,12 +18,14 @@ from rest_framework.response import Response
 from djoser.views import UserViewSet
 
 from django_filters.rest_framework import (
-    DjangoFilterBackend, FilterSet, AllValuesMultipleFilter, NumberFilter, BooleanFilter,
+    DjangoFilterBackend, FilterSet, 
+    # AllValuesMultipleFilter, NumberFilter, 
+    BooleanFilter,
     ModelMultipleChoiceFilter
 )
 
-from .permissions import IsAuthenticated, IsAuthorOrReadOnly
-from .mixins import CreateDestroyViewSet, ListCreateDestroyViewSet
+from .permissions import IsAuthorOrReadOnly
+from .mixins import CreateDestroyViewSet
 
 from users.models import CustomUser
 from dish.models import (
@@ -59,7 +65,7 @@ class CustomUserViewSet(UserViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly, )
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = ('id', )
     pagination_class = None
@@ -68,7 +74,7 @@ class TagViewSet(viewsets.ModelViewSet):
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly, )
     # filter_backends = (filters.SearchFilter, )
     # search_fields = ('^name', )
     pagination_class = None
@@ -93,13 +99,9 @@ class RecipeFilter(FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ('tags', 
-            # 'author', 
-            # 'tags_filter'
-            )
+        fields = ('tags', )
 
     def filter_is_favorited(self, queryset, name, value):
-        # print(name)
         queryset = Recipe.objects.all()
         user = self.request.user
         if value:
@@ -113,18 +115,12 @@ class RecipeFilter(FilterSet):
             queryset = queryset.filter(cart__user=user)
         return queryset
 
-    # def filter_is_favorited(self, queryset, name, value):
-    #     if value:
-    #         user = self.request.user
-    #         queryset = user.favorite.all()
-    #     return queryset
-
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Контроллер рецептов."""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    # permission_classes = (IsAuthenticatedOrReadOnly, )
     # filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
     filter_backends = (DjangoFilterBackend, )
     # filter_backends = (filters.SearchFilter, )
@@ -147,10 +143,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             self.permission_classes = (IsAuthenticated, )
         elif self.request.method == 'PATCH':
             self.permission_classes = (IsAuthorOrReadOnly, )
-        elif self.action in ('retrieve', ):
-            self.permission_classes = (permissions.AllowAny, )
+        elif self.action in ('retrieve', 'list'):
+            self.permission_classes = (AllowAny, )
+        elif self.action in ('destroy', 'update'):
+            self.permission_classes = (IsAuthorOrReadOnly, )
             # self.permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
-        self.permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+        self.permission_classes = (IsAuthenticatedOrReadOnly, )
         return super().get_permissions()
 
     def get_serializer_class(self):
@@ -234,32 +232,37 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request):
         """Список покупок в файл."""
         user = request.user
-        # recipes = Recipe.objects.select_related().filter(cart__user=user)
-        # print(recipes.query)
-        cartingredients=RecipeIngredientAmount.objects.filter(
-            recipe__cart__user=user).order_by('-ingredient', '-amount').select_related(
-                'ingredient','recipe')
-        # print(cartingredients)
-        with open('buy_list.txt', 'w') as file:
+        queryset_ingredient = RecipeIngredientAmount.objects.filter(
+            recipe__cart__user=user).values(
+                'ingredient__name', 'ingredient__measurement').annotate(
+                    amount=Sum('amount')
+                )
+        file_name = 'buy_list.txt'
+        with open(file_name, 'w') as file:
             file.write('Список покупок FoodGram:\n\n')
-            for item in cartingredients:
+            for item in queryset_ingredient:
+                print(item['ingredient__name'])
                 file.write(
-                    f'{item.ingredient} - {item.amount}\n'
+                    f'{item["ingredient__name"]} ({item["ingredient__measurement"]})- {item["amount"]}\n'
                 )
             file.write('\nУдачных покупок!\n')
-        file_handle = file.open()
-        response = HttpResponse(file_handle, content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename=buy_list.txt'
+            file.close
+        with open(file_name, 'r') as file:
+            content_file = file.read()
+            response = HttpResponse(content_file, content_type='text/plain')
+            response['Content-Disposition'] = r'attachment; filename={file_name}'
+            file.close
         return response
+
 
         # with open(file,'r') as file2:
         #     response = HttpResponse(file2, content_type='text/plain')
         #     response['Content-Disposition'] = 'attachment; filename=buy_list.txt'
         # return Response
-        # # return Response (
-        # #         {'message': 'Список покупок сформирован'},
-        # #         status=status.HTTP_200_OK
-        # #         )
+        return Response (
+                {'message': 'Список покупок сформирован'},
+                status=status.HTTP_200_OK
+                )
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
