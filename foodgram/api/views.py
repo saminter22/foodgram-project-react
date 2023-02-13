@@ -104,15 +104,15 @@ class RecipeFilter(FilterSet):
     def filter_is_favorited(self, queryset, name, value):
         queryset = Recipe.objects.all()
         user = self.request.user
-        if value:
-            queryset = queryset.filter(favorite__user=user)
+        if value and user.is_authenticated:
+            return queryset.filter(favorite__user=user)
         return queryset
 
     def filter_in_cart(self, queryset, name, value):
         queryset = Recipe.objects.all()
         user = self.request.user
-        if value:
-            queryset = queryset.filter(cart__user=user)
+        if value and user.is_authenticated:
+            return queryset.filter(cart__user=user)
         return queryset
 
 
@@ -228,7 +228,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             {'message': 'Удалено из корзины'}, status=status.HTTP_204_NO_CONTENT
             )
 
-    @action(detail=False, )
+    @action(detail=False, permission_classes=(IsAuthenticated, ))
     def download_shopping_cart(self, request):
         """Список покупок в файл."""
         user = request.user
@@ -253,16 +253,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             response['Content-Disposition'] = r'attachment; filename={file_name}'
             file.close
         return response
-
-
-        # with open(file,'r') as file2:
-        #     response = HttpResponse(file2, content_type='text/plain')
-        #     response['Content-Disposition'] = 'attachment; filename=buy_list.txt'
-        # return Response
-        return Response (
-                {'message': 'Список покупок сформирован'},
-                status=status.HTTP_200_OK
-                )
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):

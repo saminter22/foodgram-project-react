@@ -85,10 +85,12 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        if user.is_authenticated:
         # is_subscribed = Subscription.objects.filter(user=obj.id, author=obj.id).exists()
-        is_subscribed = Subscription.objects.filter(
-            subscriber=self.context.get('request').user, author=obj).exists()
-        return is_subscribed
+            return Subscription.objects.filter(
+            subscriber=user, author=obj).exists()
+        return False
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -106,14 +108,16 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_is_favorited(self, obj):
-        is_favorited = Favorite.objects.filter(
-            user=self.context.get('request').user, recipe=obj).exists()
-        return is_favorited
+        user = self.context.get('request').user
+        if user.is_authenticated:
+            return Favorite.objects.filter(user=user, recipe=obj.id).exists()
+        return False
 
     def get_is_in_shopping_cart(self, obj):
-        is_in_shopping_cart = Cart.objects.filter(
-            user=self.context.get('request').user, recipe=obj).exists()
-        return is_in_shopping_cart
+        user = self.context.get('request').user
+        if user.is_authenticated:
+            return Cart.objects.filter(user=user, recipe=obj.id).exists()
+        return False
 
 
 class IngredientAmountSerializerWrite(serializers.ModelSerializer):
@@ -230,10 +234,11 @@ class SubscribeSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, obj):
-        is_subscribed = Subscription.objects.filter(
-            subscriber=self.context.get('request').user, author=obj).exists()
-        return is_subscribed
-        # return True
+        user = self.context.get('request').user
+        if user.is_authenticated:
+            return Subscription.objects.filter(
+                subscriber=user, author=obj.id).exists()
+        return False
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()

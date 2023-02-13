@@ -1,6 +1,6 @@
-python manage.py makemigrations
-python manage.py migrate --noinput
-python manage.py collectstatic --noinput
+python3 manage.py makemigrations
+python3 manage.py migrate
+python3 manage.py collectstatic
 # python manage.py createsuperuser
 # python manage.py loadcsv ../data/ingredients.csv Ingredient
-python manage.py loadcsv ingredients.csv Ingredient
+python3 manage.py loadcsv ingredients.csv Ingredient
