@@ -52,7 +52,7 @@ services:
 
   frontend:
     container_name: frontend
-    image: saminter22/foodgram-frontend:latest
+    image: saminter22/foodgram_frontend:latest
     # build:
     #   context: ../frontend
     #   dockerfile: Dockerfile
