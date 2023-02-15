@@ -86,10 +86,9 @@ class AuthorSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
-        if user.is_authenticated:
-        # is_subscribed = Subscription.objects.filter(user=obj.id, author=obj.id).exists()
-            return Subscription.objects.filter(
-            subscriber=user, author=obj).exists()
+        if user.is_authenticated and Subscription.objects.filter(
+            subscriber=user, author=obj).exists():
+            return True
         return False
 
 
@@ -176,14 +175,17 @@ class RecipeSerializerWrite(serializers.ModelSerializer):
         context={'request': self.context.get('request')}).data
 
     def add_ingredients(self, recipe, ingredients):
-        # print(recipe)
-        for ingredient in ingredients:
-            id_ingredient = Ingredient.objects.get(id=ingredient['id'])
-            RecipeIngredientAmount.objects.create(
+        RecipeIngredientAmount.objects.bulk_create([RecipeIngredientAmount(
+                ingredient = Ingredient.objects.get(id=ingred['id']),
                 recipe=recipe,
-                ingredient=id_ingredient,
-                amount=ingredient['amount']
-            )
+                amount=ingred['amount']) for ingred in ingredients])
+        # for ingredient in ingredients:
+        #     id_ingredient = Ingredient.objects.get(id=ingredient['id'])
+        #     RecipeIngredientAmount.objects.create(
+        #         recipe=recipe,
+        #         ingredient=id_ingredient,
+        #         amount=ingredient['amount']
+        #     )
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')
