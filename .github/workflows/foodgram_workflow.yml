@@ -73,7 +73,8 @@ jobs:
           # sudo docker-compose rm frontend -f
           sudo docker-compose rm web
           sudo docker-compose rm frontend
-          sudo docker image rm ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
+          # sudo docker image rm ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
+          sudo docker image rm saminter22/foodgram
           rm .env
           touch .env
           sudo chmod 666 .env
