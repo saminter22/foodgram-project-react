@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.db.models import Count
+# from django.db.models import Count
 
 # from .models import CustomUser
 from .models import (Ingredient, Tag, Recipe, RecipeIngredientAmount,
@@ -40,7 +40,6 @@ class IngredientInLine(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    # Recipe.objects.annotate(favorite_count = Count('favorite'))
     list_display = (
         'name',
         'author',

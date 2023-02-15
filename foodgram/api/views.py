@@ -1,16 +1,14 @@
-#api/views.py
-from django.contrib.auth import get_user_model
+# api/views.py
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 from django.db.models import Sum
-from django.http import FileResponse
 from django.http import HttpResponse
-from rest_framework import filters
+# from rest_framework import filters
 from rest_framework.permissions import (
-    IsAuthenticated, 
+    IsAuthenticated,
     IsAuthenticatedOrReadOnly,
     AllowAny
-    )
+)
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -18,10 +16,11 @@ from rest_framework.response import Response
 from djoser.views import UserViewSet
 
 from django_filters.rest_framework import (
-    DjangoFilterBackend, FilterSet, 
-    # AllValuesMultipleFilter, NumberFilter, 
+    DjangoFilterBackend,
+    FilterSet,
     BooleanFilter,
-    ModelMultipleChoiceFilter
+    ModelMultipleChoiceFilter,
+    # AllValuesMultipleFilter, NumberFilter,
 )
 
 from .permissions import IsAuthorOrReadOnly
@@ -29,22 +28,22 @@ from .mixins import CreateDestroyViewSet
 
 from users.models import CustomUser
 from dish.models import (
-    Tag, 
-    Ingredient, 
-    Recipe, 
+    Tag,
+    Ingredient,
+    Recipe,
     RecipeIngredientAmount,
     Subscription,
     Favorite,
     Cart
-    )
+)
 from .serializers import (
     CustomUserCreateSerializer,
     CustomUserSerializer,
-    TagSerializer, 
-    IngredientSerializer, 
+    TagSerializer,
+    IngredientSerializer,
     RecipeSerializer,
     RecipeSerializerWrite,
-    # SubscriptionSerializer, 
+    # SubscriptionSerializer,
     FavoriteSerializer,
     SubscribeSerializer,
 )
@@ -139,7 +138,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         """Права на разные запросы."""
         if self.action in (
-            'create', 'favorite', 'shopping_cart', 'download_shopping_cart'):
+            'create', 'favorite', 'shopping_cart', 'download_shopping_cart'
+        ):
             self.permission_classes = (IsAuthenticated, )
         elif self.request.method == 'PATCH':
             self.permission_classes = (IsAuthorOrReadOnly, )
@@ -147,7 +147,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             self.permission_classes = (AllowAny, )
         elif self.action in ('destroy', 'update'):
             self.permission_classes = (IsAuthorOrReadOnly, )
-            # self.permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+            # self.permission_classes =(permissions.IsAuthenticatedOrReadOnly,)
         self.permission_classes = (IsAuthenticatedOrReadOnly, )
         return super().get_permissions()
 
@@ -164,8 +164,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         super().perform_update(serializer)
 
     @action(
-        methods=['POST', 'DELETE'], 
-        detail=True, 
+        methods=['POST', 'DELETE'],
+        detail=True,
         permission_classes=(IsAuthenticated, ),
         # filter_backends = (DjangoFilterBackend, ),
         # filterset_fields = ('tags', )
@@ -178,25 +178,36 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe = get_object_or_404(Recipe, pk=recipe_id)
             try:
                 Favorite.objects.create(user=user, recipe=recipe)
-                serializer = FavoriteSerializer(recipe, context = {'request': request})
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            except  IntegrityError:
+                serializer = FavoriteSerializer(
+                    recipe,
+                    context={'request': request}
+                )
                 return Response(
-                    {'message': 'Уже добавлено в Избранное'}, 
+                    serializer.data, status=status.HTTP_201_CREATED
+                )
+            except IntegrityError:
+                return Response(
+                    {'message': 'Уже добавлено в Избранное'},
                     status=status.HTTP_400_BAD_REQUEST
-                    )
+                )
         if request.method == 'DELETE':
             favorite = Favorite.objects.filter(user=user, recipe=recipe_id)
             if not favorite:
                 return Response(
-                {'message': 'Рецепт отсутствует в избранномм'}, status=status.HTTP_400_BAD_REQUEST
+                    {'message': 'Рецепт отсутствует в избранном'},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
             favorite.delete()
             return Response(
-                {'message': 'Убрано из Избранного'}, status=status.HTTP_204_NO_CONTENT
-                )
+                {'message': 'Убрано из Избранного'},
+                status=status.HTTP_204_NO_CONTENT
+            )
 
-    @action(methods=['POST', 'DELETE'], detail=True, permission_classes=(IsAuthenticated, ))
+    @action(
+        methods=['POST', 'DELETE'],
+        detail=True,
+        permission_classes=(IsAuthenticated, )
+    )
     def shopping_cart(self, request, **kwargs):
         """Корзина - добавление, удаление."""
         recipe_id = self.kwargs.get('pk')
@@ -207,26 +218,34 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 return Response(
                     {'message': 'Такого рецепта нет'},
                     status=status.HTTP_404_NOT_FOUND
-                    )
+                )
             recipe = get_object_or_404(Recipe, id=recipe_id)
             try:
                 Cart.objects.create(user=user, recipe=recipe)
-                serializer = FavoriteSerializer(recipe, context = {'request': request})
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                serializer = FavoriteSerializer(
+                    recipe,
+                    context={'request': request}
+                )
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
             except IntegrityError:
                 return Response(
-                    {'message': 'Уже в корзине'}, status=status.HTTP_400_BAD_REQUEST
-                    )
+                    {'message': 'Уже в корзине'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         if request.method == 'DELETE':
             cart = Cart.objects.filter(user=user, recipe=recipe_id)
         if not cart:
             return Response(
-            {'message': 'Рецепт отсутствует в корзине'}, status=status.HTTP_400_BAD_REQUEST
+                {'message': 'Рецепт отсутствует в корзине'},
+                status=status.HTTP_400_BAD_REQUEST
             )
         cart.delete()
         return Response(
-            {'message': 'Удалено из корзины'}, status=status.HTTP_204_NO_CONTENT
-            )
+            {'message': 'Удалено из корзины'},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
     @action(detail=False, permission_classes=(IsAuthenticated, ))
     def download_shopping_cart(self, request):
@@ -235,22 +254,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
         queryset_ingredient = RecipeIngredientAmount.objects.filter(
             recipe__cart__user=user).values(
                 'ingredient__name', 'ingredient__measurement').annotate(
-                    amount=Sum('amount')
-                )
+                    amount=Sum('amount'))
         file_name = 'buy_list.txt'
         with open(file_name, 'w') as file:
             file.write('Список покупок FoodGram:\n\n')
             for item in queryset_ingredient:
                 print(item['ingredient__name'])
                 file.write(
-                    f'{item["ingredient__name"]} ({item["ingredient__measurement"]})- {item["amount"]}\n'
+                    f'{item["ingredient__name"]} '
+                    f'({item["ingredient__measurement"]})- {item["amount"]}\n'
                 )
             file.write('\nУдачных покупок!\n')
             file.close
         with open(file_name, 'r') as file:
             content_file = file.read()
             response = HttpResponse(content_file, content_type='text/plain')
-            response['Content-Disposition'] = r'attachment; filename={file_name}'
+            response['Content-Disposition'] = (
+                r'attachment; filename={file_name}')
             file.close
         return response
 
@@ -262,7 +282,8 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     # pagination_class = None
 
     def get_queryset(self):
-        return CustomUser.objects.filter(subscribers__subscriber=self.request.user)
+        return CustomUser.objects.filter(
+            subscribers__subscriber=self.request.user)
 
 
 class APISubscribe(CreateDestroyViewSet):
@@ -270,14 +291,18 @@ class APISubscribe(CreateDestroyViewSet):
     permission_classes = (IsAuthenticated, )
 
     def destroy(self, request, user_id):
-        subscribe = Subscription.objects.filter(subscriber=request.user, author__id=user_id)
+        subscribe = Subscription.objects.filter(
+            subscriber=request.user, author__id=user_id)
         if not subscribe:
             return Response(
-                {'message': 'Такой подписки нет'}, 
+                {'message': 'Такой подписки нет'},
                 status=status.HTTP_404_NOT_FOUND
-                )
+            )
         subscribe.delete()
-        return Response({'message': 'Отписка произошла'}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'message': 'Отписка произошла'},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
     def create(self, request, user_id):
         author = get_object_or_404(CustomUser, pk=user_id)
@@ -286,18 +311,19 @@ class APISubscribe(CreateDestroyViewSet):
             return Response(
                 {'message': 'Такого автора нет'},
                 status=status.HTTP_404_NOT_FOUND
-                )
+            )
         if author == user:
             return Response(
                 {'message': 'Подписаться на себя нельзя'},
                 status=status.HTTP_400_BAD_REQUEST
-                )
+            )
         try:
             Subscription.objects.create(subscriber=request.user, author=author)
-            serializer = SubscribeSerializer(author, context = {'request': request})
+            serializer = SubscribeSerializer(
+                author, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response(
-                {'message': 'Подписка уже оформлена'}, 
+                {'message': 'Подписка уже оформлена'},
                 status=status.HTTP_400_BAD_REQUEST
-                )
+            )

@@ -51,4 +51,4 @@ class Command(BaseCommand):
 
         # self.stdout.write (f'Данные из {options["csv_path"].split("/")[2]} '
         #         f'были успешно загружены в модель {options["model_name"]}')
-        self.stdout.write (f'Данные загружены')
+        self.stdout.write('Данные загружены')
