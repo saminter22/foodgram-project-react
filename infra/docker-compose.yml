@@ -22,7 +22,8 @@ services:
   # Контейнер с приложением
   web:
     container_name: web
-    build: ../foodgram/
+    image: saminter22/foodgram:latest
+    # build: ../foodgram/
     restart: always
     volumes:
       - static_value:/app/static/
