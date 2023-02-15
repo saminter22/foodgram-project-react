@@ -24,6 +24,7 @@ from django_filters.rest_framework import (
 )
 
 from .permissions import IsAuthorOrReadOnly
+
 from .mixins import CreateDestroyViewSet
 
 from users.models import CustomUser
