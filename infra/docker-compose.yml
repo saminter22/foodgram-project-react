@@ -21,7 +21,8 @@ services:
 
   web:
     container_name: web
-    image: saminter22/foodgram:latest
+    # image: saminter22/foodgram:latest
+    image: saminter22/foodgram
     # build: ../foodgram/
     restart: always
     volumes:
