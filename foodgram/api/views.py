@@ -20,13 +20,10 @@ from django_filters.rest_framework import (
     FilterSet,
     BooleanFilter,
     ModelMultipleChoiceFilter,
-    # AllValuesMultipleFilter, NumberFilter,
 )
 
-from .permissions import IsAuthorOrReadOnly
-
 from .mixins import CreateDestroyViewSet
-
+from .permissions import IsAuthorOrReadOnly
 from users.models import CustomUser
 from dish.models import (
     Tag,
