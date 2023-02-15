@@ -52,8 +52,12 @@ services:
 
   frontend:
     container_name: frontend
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: saminter22/foofgram-frontend:latest
+    # build:
+    #   context: ../frontend
+    #   dockerfile: Dockerfile
     volumes:
       - ../frontend/:/app/result_build/
+    depends_on:
+      - db
+
