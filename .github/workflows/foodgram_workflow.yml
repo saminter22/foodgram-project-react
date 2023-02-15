@@ -25,7 +25,7 @@ jobs:
         python -m flake8 foodgram
         # flake8 .
         #python -m pytest
-        # pytest .
+        # pytest . 
         # перейти в папку, содержащую manage.py — 
         #<корневая_папка_infra_actions>/<папка_проекта>/manage.py
         # cd api_yamdb/
