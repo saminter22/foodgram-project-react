@@ -121,7 +121,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     # filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
     filter_backends = (DjangoFilterBackend, )
     # filter_backends = (filters.SearchFilter, )
-    filterset_class = RecipeFilter
+    filterset_class = (RecipeFilter, )
     search_fields = ('ingredients', )
 
     def get_queryset(self):
