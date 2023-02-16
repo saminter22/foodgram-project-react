@@ -98,7 +98,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     #     to_field_name='slug',
     #     queryset=Tag.objects.all(),
     #     lookup_expr='exact'
-    #)
+    # )
 
 
 class RecipeFilter(FilterSet):
@@ -115,7 +115,6 @@ class RecipeFilter(FilterSet):
         if value:
             queryset.filter(
                 tags__slug__in=self.data.getlist('tags')).distinct()
-                # tags__slug=self.data.getlist('tags')).distinct()
         return queryset
 
     def filter_is_favorited(self, queryset, name, value):
