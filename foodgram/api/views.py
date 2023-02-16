@@ -100,6 +100,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     #     lookup_expr='exact'
     # )
 
+
 class RecipeFilter(FilterSet):
     tags = CharFilter(method='filter_tags')
     is_favorited = BooleanFilter(method='filter_is_favorited')
