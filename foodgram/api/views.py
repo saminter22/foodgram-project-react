@@ -19,9 +19,12 @@ from django_filters.rest_framework import (
     DjangoFilterBackend,
     FilterSet,
     BooleanFilter,
-    ModelMultipleChoiceFilter,
+    # ModelMultipleChoiceFilter,
 )
-from django_filters import CharFilter, AllValuesMultipleFilter
+from django_filters import (
+    CharFilter, 
+    # AllValuesMultipleFilter
+)
 
 from .mixins import CreateDestroyViewSet
 from .permissions import IsAuthorOrReadOnly
@@ -83,7 +86,6 @@ class IngredientViewSet(viewsets.ModelViewSet):
             queryset = Ingredient.objects.filter(name__startswith=name)
             return queryset
         return Ingredient.objects.all()
-
 
     # tags = ModelMultipleChoiceFilter(
     #     field_name='tags__slug',
