@@ -21,6 +21,7 @@ from django_filters.rest_framework import (
     BooleanFilter,
     ModelMultipleChoiceFilter,
 )
+from django_filters import AllValuesMultipleFilter
 
 from .mixins import CreateDestroyViewSet
 from .permissions import IsAuthorOrReadOnly
@@ -85,11 +86,17 @@ class IngredientViewSet(viewsets.ModelViewSet):
 
 
 class RecipeFilter(FilterSet):
-    tags = ModelMultipleChoiceFilter(
+    # tags = ModelMultipleChoiceFilter(
+    #     field_name='tags__slug',
+    #     to_field_name='slug',
+    #     queryset=Tag.objects.all()
+    #     # lookup_type='in'
+    # )
+    tags = AllValuesMultipleFilter(
         field_name='tags__slug',
         to_field_name='slug',
-        queryset=Tag.objects.all()
-        # lookup_type='in'
+        queryset=Tag.objects.all(),
+        lookup_expr='exact'
     )
     is_favorited = BooleanFilter(method='filter_is_favorited')
     is_in_shopping_cart = BooleanFilter(method='filter_in_cart')
@@ -117,12 +124,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """Контроллер рецептов."""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    # permission_classes = (IsAuthenticatedOrReadOnly, )
-    # filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
     filter_backends = (DjangoFilterBackend, )
-    # filter_backends = (filters.SearchFilter, )
     filterset_class = (RecipeFilter, )
     search_fields = ('ingredients', )
+    # permission_classes = (IsAuthenticatedOrReadOnly, )
+    # filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
+    # filter_backends = (filters.SearchFilter, )
 
     def get_queryset(self):
         if self.request.GET.get('tags'):
