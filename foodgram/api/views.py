@@ -111,7 +111,7 @@ class RecipeFilter(FilterSet):
         fields = ('tags', )
 
     def filter_tags(self, queryset, name, value):
-        # queryset = Recipe.objects.all()
+        queryset = Recipe.objects.all()
         if value:
             return queryset.filter(
                 tags__slug__in=self.data.getlist('tags')).distinct()
