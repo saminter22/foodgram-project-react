@@ -22,7 +22,7 @@ from django_filters.rest_framework import (
     # ModelMultipleChoiceFilter,
 )
 from django_filters import (
-    CharFilter, 
+    CharFilter,
     # AllValuesMultipleFilter
 )
 
@@ -99,6 +99,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     #     queryset=Tag.objects.all(),
     #     lookup_expr='exact'
     # )
+
 class RecipeFilter(FilterSet):
     tags = CharFilter(method='filter_tags')
     is_favorited = BooleanFilter(method='filter_is_favorited')
