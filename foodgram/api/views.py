@@ -21,7 +21,7 @@ from django_filters.rest_framework import (
     BooleanFilter,
     ModelMultipleChoiceFilter,
 )
-from django_filters import AllValuesMultipleFilter
+from django_filters import CharFilter, AllValuesMultipleFilter
 
 from .mixins import CreateDestroyViewSet
 from .permissions import IsAuthorOrReadOnly
@@ -85,25 +85,32 @@ class IngredientViewSet(viewsets.ModelViewSet):
         return Ingredient.objects.all()
 
 
-class RecipeFilter(FilterSet):
     # tags = ModelMultipleChoiceFilter(
     #     field_name='tags__slug',
     #     to_field_name='slug',
     #     queryset=Tag.objects.all()
     #     # lookup_type='in'
     # )
-    tags = AllValuesMultipleFilter(
-        field_name='tags__slug',
-        to_field_name='slug',
-        queryset=Tag.objects.all(),
-        lookup_expr='exact'
-    )
+    # tags = AllValuesMultipleFilter(
+    #     field_name='tags__slug',
+    #     to_field_name='slug',
+    #     queryset=Tag.objects.all(),
+    #     lookup_expr='exact'
+    # )
+class RecipeFilter(FilterSet):
+    tags = CharFilter(method='filter_tags')
     is_favorited = BooleanFilter(method='filter_is_favorited')
     is_in_shopping_cart = BooleanFilter(method='filter_in_cart')
 
     class Meta:
         model = Recipe
         fields = ('tags', )
+
+    def filter_tags(self, queryset, name, value):
+        if value:
+            queryset.filter(
+                tags__slug__in=self.data.getlist('tags')).distinct()
+        return queryset
 
     def filter_is_favorited(self, queryset, name, value):
         queryset = Recipe.objects.all()
