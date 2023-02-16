@@ -137,7 +137,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     filter_backends = (DjangoFilterBackend, )
-    filterset_class = (RecipeFilter, )
+    filterset_class = RecipeFilter
     search_fields = ('ingredients', )
     # permission_classes = (IsAuthenticatedOrReadOnly, )
     # filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
