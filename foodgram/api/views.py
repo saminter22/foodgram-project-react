@@ -118,7 +118,7 @@ class RecipeFilter(FilterSet):
         return queryset
 
     def filter_is_favorited(self, queryset, name, value):
-        queryset = Recipe.objects.all()
+        # queryset = Recipe.objects.all()
         user = self.request.user
         if value and user.is_authenticated:
             return queryset.filter(favorite__user=user)
