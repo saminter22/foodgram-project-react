@@ -69,8 +69,6 @@ jobs:
         passphrase: ${{ secrets.PASSPHRASE }}
         script: |
           sudo docker-compose stop
-          # sudo docker-compose stop web -f
-          # sudo docker-compose rm web -f
           # sudo docker stop web -f
           # sudo docker rm web -f
           # sudo docker-compose rm frontend -f

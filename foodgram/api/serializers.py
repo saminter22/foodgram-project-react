@@ -2,6 +2,7 @@
 import base64
 
 from django.core.files.base import ContentFile
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from djoser.serializers import UserSerializer
 # from django.shortcuts import get_object_or_404, get_list_or_404
@@ -139,6 +140,13 @@ class RecipeSerializer(serializers.ModelSerializer):
 class IngredientAmountSerializerWrite(serializers.ModelSerializer):
     """Принимает количество ингредиента и его id при записи рецепта."""
     id = serializers.IntegerField()
+    amount = serializers.IntegerField(
+        write_only=True,
+        validators=[
+            MinValueValidator(1, 'Пожалуйста, не меньше 1'),
+            MaxValueValidator(500000, 'Это слишком много...')
+        ]
+    )
 
     class Meta:
         model = RecipeIngredientAmount
