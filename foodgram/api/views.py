@@ -1,4 +1,5 @@
 import tempfile
+
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 from django.db.models import Sum
@@ -6,7 +7,6 @@ from django.http import HttpResponse
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAuthenticatedOrReadOnly,
-    AllowAny
 )
 from rest_framework import status
 from rest_framework import viewsets
@@ -146,21 +146,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return queryset
         return Recipe.objects.all()
 
-    # def get_permissions(self):
-    #     """Права на разные запросы."""
-    #     if self.action in (
-    #         'create', 'favorite', 'shopping_cart', 'download_shopping_cart'
-    #     ):
-    #         self.permission_classes = (IsAuthenticated, )
-    #     elif self.request.method == 'PATCH':
-    #         self.permission_classes = (IsAuthorOrReadOnly, )
-    #     elif self.action in ('retrieve', 'list'):
-    #         self.permission_classes = (AllowAny, )
-    #     elif self.action in ('destroy', 'update'):
-    #         self.permission_classes = (IsAuthorOrReadOnly, )
-    #         # self.permission_classes =(permissions.IsAuthenticatedOrReadOnly,)
-    #     self.permission_classes = (IsAuthenticatedOrReadOnly, )
-    #     return super().get_permissions()
 
     def get_serializer_class(self):
         if self.request.method == 'GET':

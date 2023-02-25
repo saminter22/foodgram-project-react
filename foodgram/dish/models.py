@@ -46,7 +46,7 @@ class Recipe(models.Model):
         verbose_name='Время приготовления',
         validators=[MinValueValidator(1),
                     MaxValueValidator(5000)]
-        )
+    )
     image = models.ImageField(upload_to='images/', verbose_name="Фото блюда")
     ingredients = models.ManyToManyField(Ingredient,
                                          through='RecipeIngredientAmount',
