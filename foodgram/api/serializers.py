@@ -1,11 +1,9 @@
-# api/serializers.py
 import base64
 
 from django.core.files.base import ContentFile
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from djoser.serializers import UserSerializer
-# from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -176,15 +174,6 @@ class RecipeSerializerWrite(serializers.ModelSerializer):
             )
         ]
 
-    # def validate(self, data):
-    #     # print(data)
-    #     # print(len(data['tags']))
-    #     if len(data['tags']) == 0:
-    #         raise serializers.ValidationError(
-    #             'Теги обязательны!'
-    #         )
-    #     return data
-
     def validate_ingredients(self, value):
         if len(value) == 0:
             raise serializers.ValidationError(
@@ -192,29 +181,19 @@ class RecipeSerializerWrite(serializers.ModelSerializer):
         return value
 
     def validate_tags(self, value):
-        # print(value)
         for item in value:
             if not Tag.objects.filter(name=item).exists():
                 raise serializers.ValidationError('Теги обязательны!')
         return value
 
     def to_representation(self, instance):
-        return RecipeSerializer(
-            instance,
-            context={'request': self.context.get('request')}).data
+        return RecipeSerializer(instance).data
 
     def add_ingredients(self, recipe, ingredients):
         RecipeIngredientAmount.objects.bulk_create([RecipeIngredientAmount(
             ingredient=Ingredient.objects.get(id=ingred['id']),
             recipe=recipe,
             amount=ingred['amount']) for ingred in ingredients])
-        # for ingredient in ingredients:
-        #     id_ingredient = Ingredient.objects.get(id=ingredient['id'])
-        #     RecipeIngredientAmount.objects.create(
-        #         recipe=recipe,
-        #         ingredient=id_ingredient,
-        #         amount=ingredient['amount']
-        #     )
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')
@@ -234,13 +213,6 @@ class RecipeSerializerWrite(serializers.ModelSerializer):
         RecipeIngredientAmount.objects.filter(recipe=instance).delete()
         self.add_ingredients(recipe, ingredients)
         return instance
-
-
-# class SubscriptionSerializer(serializers.ModelSerializer):
-#     """Показывает список подписчиков."""
-#     class Meta:
-#         model = CustomUser
-#         fields = ('email', 'id', 'username', 'first_name', 'last_name', )
 
 
 class ShortRecipeSerializer(serializers.ModelSerializer):

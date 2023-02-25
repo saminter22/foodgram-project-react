@@ -1,6 +1,5 @@
 from django.contrib import admin
 
-# from .models import CustomUser
 from .models import (Ingredient, Tag, Recipe, RecipeIngredientAmount,
                      Subscription, Favorite, Cart)
 
@@ -35,6 +34,7 @@ class TagAdmin(admin.ModelAdmin):
 class IngredientInLine(admin.TabularInline):
     model = RecipeIngredientAmount
     list_display = ('recipe', 'ingredient', 'amount', 'measurement')
+    min_num = 1
 
 
 @admin.register(Recipe)

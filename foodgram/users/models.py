@@ -25,7 +25,6 @@ class CustomUser(AbstractUser):
         null=False,
     )
     USERNAME_FIELD = 'email'
-    # REQUIRED_FIELDS = ['username']
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
@@ -34,7 +33,6 @@ class CustomUser(AbstractUser):
         verbose_name_plural = 'Пользователи'
 
     def __str__(self):
-        # return f'{self.username} - {self.email}'
         return self.username
 
     def get_absolute_url(self):

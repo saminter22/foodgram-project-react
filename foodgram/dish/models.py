@@ -43,9 +43,10 @@ class Recipe(models.Model):
                                     verbose_name='Дата публикации')
     text = models.TextField(verbose_name='Описание рецепта')
     cooking_time = models.PositiveSmallIntegerField(
+        verbose_name='Время приготовления',
         validators=[MinValueValidator(1),
-                    MaxValueValidator(5000)],
-        verbose_name='Время приготовления')
+                    MaxValueValidator(5000)]
+        )
     image = models.ImageField(upload_to='images/', verbose_name="Фото блюда")
     ingredients = models.ManyToManyField(Ingredient,
                                          through='RecipeIngredientAmount',
@@ -72,7 +73,12 @@ class RecipeIngredientAmount(models.Model):
                                    verbose_name='Название ингредиента',
                                    related_name='baserecipes')
     amount = models.SmallIntegerField(
-        verbose_name='Количество')
+        verbose_name='Количество',
+        validators=[
+            MinValueValidator(1, message='Минимальное значение 1'),
+            MaxValueValidator(500000, message='Максимальное значение 500000')
+        ]
+    )
 
     class Meta:
         constraints = [

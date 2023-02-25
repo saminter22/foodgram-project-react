@@ -1,10 +1,8 @@
-# api/views.py
-#
+import tempfile
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 from django.db.models import Sum
 from django.http import HttpResponse
-# from rest_framework import filters
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAuthenticatedOrReadOnly,
@@ -20,11 +18,9 @@ from django_filters.rest_framework import (
     DjangoFilterBackend,
     FilterSet,
     BooleanFilter,
-    # ModelMultipleChoiceFilter,
 )
 from django_filters import (
     CharFilter,
-    # AllValuesMultipleFilter
 )
 
 from .mixins import CreateDestroyViewSet
@@ -46,7 +42,6 @@ from .serializers import (
     IngredientSerializer,
     RecipeSerializer,
     RecipeSerializerWrite,
-    # SubscriptionSerializer,
     FavoriteSerializer,
     SubscribeSerializer,
 )
@@ -112,7 +107,7 @@ class RecipeFilter(FilterSet):
         fields = ('tags', )
 
     def filter_tags(self, queryset, name, value):
-        queryset = Recipe.objects.all()
+        # queryset = Recipe.objects.all()
         if value:
             return queryset.filter(
                 tags__slug__in=self.data.getlist('tags')).distinct()
@@ -140,9 +135,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filterset_class = RecipeFilter
     search_fields = ('ingredients', )
-    # permission_classes = (IsAuthenticatedOrReadOnly, )
-    # filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
-    # filter_backends = (filters.SearchFilter, )
+    permission_classes = (IsAuthorOrReadOnly, )
 
     def get_queryset(self):
         if self.request.GET.get('tags'):
@@ -153,21 +146,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return queryset
         return Recipe.objects.all()
 
-    def get_permissions(self):
-        """Права на разные запросы."""
-        if self.action in (
-            'create', 'favorite', 'shopping_cart', 'download_shopping_cart'
-        ):
-            self.permission_classes = (IsAuthenticated, )
-        elif self.request.method == 'PATCH':
-            self.permission_classes = (IsAuthorOrReadOnly, )
-        elif self.action in ('retrieve', 'list'):
-            self.permission_classes = (AllowAny, )
-        elif self.action in ('destroy', 'update'):
-            self.permission_classes = (IsAuthorOrReadOnly, )
-            # self.permission_classes =(permissions.IsAuthenticatedOrReadOnly,)
-        self.permission_classes = (IsAuthenticatedOrReadOnly, )
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     """Права на разные запросы."""
+    #     if self.action in (
+    #         'create', 'favorite', 'shopping_cart', 'download_shopping_cart'
+    #     ):
+    #         self.permission_classes = (IsAuthenticated, )
+    #     elif self.request.method == 'PATCH':
+    #         self.permission_classes = (IsAuthorOrReadOnly, )
+    #     elif self.action in ('retrieve', 'list'):
+    #         self.permission_classes = (AllowAny, )
+    #     elif self.action in ('destroy', 'update'):
+    #         self.permission_classes = (IsAuthorOrReadOnly, )
+    #         # self.permission_classes =(permissions.IsAuthenticatedOrReadOnly,)
+    #     self.permission_classes = (IsAuthenticatedOrReadOnly, )
+    #     return super().get_permissions()
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -177,9 +170,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def perform_update(self, serializer):
-        # serializer.save(author=self.request.user)
-        super().perform_update(serializer)
+    # def perform_update(self, serializer):
+    #     # serializer.save(author=self.request.user)
+    #     super().perform_update(serializer)
 
     @action(
         methods=['POST', 'DELETE'],
@@ -274,10 +267,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'ingredient__name', 'ingredient__measurement').annotate(
                     amount=Sum('amount'))
         file_name = 'buy_list.txt'
-        with open(file_name, 'w') as file:
+        with tempfile.TemporaryFile() as file:
+        # with open(file_name, 'w') as file:
             file.write('Список покупок FoodGram:\n\n')
             for item in queryset_ingredient:
-                print(item['ingredient__name'])
                 file.write(
                     f'{item["ingredient__name"]} '
                     f'({item["ingredient__measurement"]})- {item["amount"]}\n'
@@ -295,9 +288,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
     """Показываем текущие подписки."""
-    # serializer_class = SubscriptionSerializer
     serializer_class = SubscribeSerializer
-    # pagination_class = None
 
     def get_queryset(self):
         return CustomUser.objects.filter(
