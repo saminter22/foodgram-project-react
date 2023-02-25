@@ -146,7 +146,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return queryset
         return Recipe.objects.all()
 
-
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return RecipeSerializer
@@ -253,7 +252,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     amount=Sum('amount'))
         file_name = 'buy_list.txt'
         with tempfile.TemporaryFile() as file:
-        # with open(file_name, 'w') as file:
             file.write('Список покупок FoodGram:\n\n')
             for item in queryset_ingredient:
                 file.write(
