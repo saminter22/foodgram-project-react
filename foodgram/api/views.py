@@ -55,8 +55,6 @@ class CustomUserCreateViewSet(UserViewSet):
 class CustomUserViewSet(UserViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
-    # permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
-    # permission_classes = (IsAuthorOrReadOnly, )
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -72,8 +70,6 @@ class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, )
-    # filter_backends = (filters.SearchFilter, )
-    # search_fields = ('^name', )
     pagination_class = None
 
     def get_queryset(self):
@@ -82,19 +78,6 @@ class IngredientViewSet(viewsets.ModelViewSet):
             queryset = Ingredient.objects.filter(name__startswith=name)
             return queryset
         return Ingredient.objects.all()
-
-    # tags = ModelMultipleChoiceFilter(
-    #     field_name='tags__slug',
-    #     to_field_name='slug',
-    #     queryset=Tag.objects.all()
-    #     # lookup_type='in'
-    # )
-    # tags = AllValuesMultipleFilter(
-    #     field_name='tags__slug',
-    #     to_field_name='slug',
-    #     queryset=Tag.objects.all(),
-    #     lookup_expr='exact'
-    # )
 
 
 class RecipeFilter(FilterSet):
@@ -107,14 +90,12 @@ class RecipeFilter(FilterSet):
         fields = ('tags', )
 
     def filter_tags(self, queryset, name, value):
-        # queryset = Recipe.objects.all()
         if value:
             return queryset.filter(
                 tags__slug__in=self.data.getlist('tags')).distinct()
         return queryset
 
     def filter_is_favorited(self, queryset, name, value):
-        # queryset = Recipe.objects.all()
         user = self.request.user
         if value and user.is_authenticated:
             return queryset.filter(favorite__user=user)
@@ -141,7 +122,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.request.GET.get('tags'):
             queryset = Recipe.objects.all()
             tags = self.request.GET.get('tags')
-            # print(tags)
             queryset = queryset.filter(tags__slug=tags)
             return queryset
         return Recipe.objects.all()
@@ -154,16 +134,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    # def perform_update(self, serializer):
-    #     # serializer.save(author=self.request.user)
-    #     super().perform_update(serializer)
-
     @action(
         methods=['POST', 'DELETE'],
         detail=True,
         permission_classes=(IsAuthenticated, ),
-        # filter_backends = (DjangoFilterBackend, ),
-        # filterset_fields = ('tags', )
     )
     def favorite(self, request, **kwargs):
         """Избранное - добавление, удаление."""

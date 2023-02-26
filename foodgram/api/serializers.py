@@ -142,7 +142,7 @@ class IngredientAmountSerializerWrite(serializers.ModelSerializer):
         write_only=True,
         validators=[
             MinValueValidator(1, 'Пожалуйста, не меньше 1'),
-            MaxValueValidator(500000, 'Это слишком много...')
+            MaxValueValidator(30000, 'Это слишком много...')
         ]
     )
 

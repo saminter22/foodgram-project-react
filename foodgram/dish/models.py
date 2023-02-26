@@ -17,7 +17,6 @@ class Ingredient(models.Model):
 
     def __str__(self):
         return f'{self.name} ({self.measurement})'
-        # return f'{self.name}'
 
 
 class Tag(models.Model):
@@ -76,7 +75,7 @@ class RecipeIngredientAmount(models.Model):
         verbose_name='Количество',
         validators=[
             MinValueValidator(1, message='Минимальное значение 1'),
-            MaxValueValidator(500000, message='Максимальное значение 500000')
+            MaxValueValidator(30000, message='Максимальное значение 30000')
         ]
     )
 
